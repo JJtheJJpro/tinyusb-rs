@@ -1,0 +1,19 @@
+[package]
+name = "tinyusb-class-msc"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+authors.workspace = true
+description = "USB Mass Storage Class (BOT + SCSI) for embassy-usb"
+
+[dependencies]
+tinyusb-types = { workspace = true }
+embassy-usb = { workspace = true }
+embassy-usb-driver = { workspace = true }
+embassy-sync = { workspace = true }
+embedded-storage = { workspace = true }
+byteorder = { workspace = true }
+log = { workspace = true }
+
+[features]
+default = []

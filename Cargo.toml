@@ -1,0 +1,29 @@
+[workspace]
+resolver = "2"
+members = [
+    "crates/tinyusb-types",
+    "crates/tinyusb-class-msc",
+    "crates/tinyusb-host",
+    "crates/tinyusb-pd",
+]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2021"
+authors = ["TinyUSB Rust Contributors"]
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/hathach/tinyusb"
+
+[workspace.dependencies]
+embassy-usb = "0.6.0"
+embassy-usb-driver = "0.2.2"
+embassy-sync = "0.8.0"
+embassy-time = "0.4.0"
+embassy-futures = "0.1.1"
+heapless = "0.8"
+static_cell = "2.1"
+embedded-storage = "0.3.1"
+byteorder = { version = "1.5", default-features = false }
+bitflags = "2.4"
+log = "0.4"
+tinyusb-types = { path = "crates/tinyusb-types" }

@@ -1,0 +1,16 @@
+[package]
+name = "tinyusb-pd"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+authors.workspace = true
+description = "USB Type-C and Power Delivery (PD) protocol stack"
+
+[dependencies]
+tinyusb-types = { workspace = true }
+byteorder = { workspace = true }
+bitflags = { workspace = true }
+log = { workspace = true }
+
+[features]
+default = []
