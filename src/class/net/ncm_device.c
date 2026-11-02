@@ -147,16 +147,23 @@ TU_ATTR_WEAK bool tud_network_default_link_state_cb(void) {
  * \attention
  *     We are lucky, that byte order is correct
  */
+
+// wNdbInDivisor/wNdbOutDivisor: a Windows Update (KB5124008, Sept 2026)
+// enabled NTB-parameter validation in usbncm.sys requiring these to be
+// >=4 and a power of 2. 1 is spec-legal but now rejected with
+// STATUS_DEVICE_HARDWARE_ERROR (Code 10) during enumeration. 4 satisfies
+// the check and is spec-legal on the device side too.
+
 TU_ATTR_ALIGNED(4) static const ntb_parameters_t ntb_parameters = {
   .wLength                  = sizeof(ntb_parameters_t),
   .bmNtbFormatsSupported    = 0x01,// 16-bit NTB supported
   .dwNtbInMaxSize           = CFG_TUD_NCM_IN_NTB_MAX_SIZE,
-  .wNdbInDivisor            = 1,
+  .wNdbInDivisor            = 4,
   .wNdbInPayloadRemainder   = 0,
   .wNdbInAlignment          = TUD_NCM_ALIGNMENT,
   .wReserved                = 0,
   .dwNtbOutMaxSize          = CFG_TUD_NCM_OUT_NTB_MAX_SIZE,
-  .wNdbOutDivisor           = 1,
+  .wNdbOutDivisor           = 4,
   .wNdbOutPayloadRemainder  = 0,
   .wNdbOutAlignment         = TUD_NCM_ALIGNMENT,
   .wNtbOutMaxDatagrams      = CFG_TUD_NCM_OUT_MAX_DATAGRAMS_PER_NTB,
@@ -204,13 +211,10 @@ static void notification_xmit(uint8_t rhport, bool force_next) {
         .wLength = 8
       }
     };
-    if (tud_speed_get() == TUSB_SPEED_HIGH) {
-      notify_speed_change.downlink = 480000000;
-      notify_speed_change.uplink = 480000000;
-    } else {
-      notify_speed_change.downlink = 12000000;
-      notify_speed_change.uplink = 12000000;
-    }
+    const uint32_t bus_bitrate = (tud_speed_get() == TUSB_SPEED_HIGH) ? 480000000U : 12000000U;
+    const uint32_t link_bitrate = (CFG_TUD_NET_LINK_BITRATE) ? (CFG_TUD_NET_LINK_BITRATE) : bus_bitrate;
+    notify_speed_change.downlink = link_bitrate;
+    notify_speed_change.uplink   = link_bitrate;
 
     uint16_t notif_len = sizeof(notify_speed_change.header) + notify_speed_change.header.wLength;
     ncm_epbuf.epnotif = notify_speed_change;
@@ -651,6 +655,10 @@ static bool recv_validate_datagram(const recv_ntb_t *ntb, uint32_t len) {
       return false;
     }
     ++ndx;
+  }
+  if (ndx == 0) {
+    TU_LOG_DRV("(EE) no datagram in ndp16\n");
+    return false;
   }
 
   #if CFG_TUD_NCM_LOG_LEVEL >= 3

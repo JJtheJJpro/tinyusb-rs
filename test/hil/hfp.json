@@ -28,7 +28,7 @@
         },
         {
             "name": "lpcxpresso43s67",
-            "uid": "08F000044528BAAA8D858F58C50700F5",
+            "uid": "0C60020145401EAA0E4B6C64C40700F5",
             "tests": {
                 "device": true, "host": false, "dual": false
             },
@@ -36,6 +36,11 @@
                 "name": "jlink",
                 "uid": "728973776",
                 "args": "-device LPC43S67_M4"
+            },
+            "flasher_recover": {
+                "name": "openocd",
+                "args": "-f interface/jlink.cfg -c \"transport select swd\" -f target/lpc4357.cfg -c \"adapter speed 4000\"",
+                "verify": false
             }
         }
     ]

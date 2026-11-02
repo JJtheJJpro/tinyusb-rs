@@ -56,8 +56,8 @@
   #include "task.h"
   #include "timers.h"
 
-  // Increase stack size when debug log is enabled
-  #define USBD_STACK_SIZE (4 * configMINIMAL_STACK_SIZE / 2) * (CFG_TUSB_DEBUG ? 2 : 1)
+  // Increase stack size when debug log or SYSVIEW instrumentation is enabled
+  #define USBD_STACK_SIZE (4 * configMINIMAL_STACK_SIZE / 2) * (BOARD_STACK_INSTRUMENTED ? 2 : 1)
 #endif
 
 #define BLINKY_STACK_SIZE configMINIMAL_STACK_SIZE
@@ -282,6 +282,10 @@ bool tud_audio_set_req_entity_cb(uint8_t rhport, tusb_control_request_t const *p
 
   // If request is for our feature unit
   if (entityID == 2) {
+    // Channel number is host-controlled (0..255) but mute[]/volume[] hold only
+    // CFG_TUD_AUDIO_FUNC_1_N_CHANNELS_TX + 1 entries - reject out-of-range (STALL)
+    TU_VERIFY(channelNum <= CFG_TUD_AUDIO_FUNC_1_N_CHANNELS_TX);
+
     switch (ctrlSel) {
       case AUDIO20_FU_CTRL_MUTE:
         // Request uses format layout 1
@@ -377,6 +381,10 @@ bool tud_audio_get_req_entity_cb(uint8_t rhport, tusb_control_request_t const *p
 
   // Feature unit
   if (entityID == 2) {
+    // Channel number is host-controlled (0..255) but mute[]/volume[] hold only
+    // CFG_TUD_AUDIO_FUNC_1_N_CHANNELS_TX + 1 entries - reject out-of-range (STALL)
+    TU_VERIFY(channelNum <= CFG_TUD_AUDIO_FUNC_1_N_CHANNELS_TX);
+
     switch (ctrlSel) {
       case AUDIO20_FU_CTRL_MUTE:
         // Audio control mute cur parameter block consists of only one byte - we thus can send it right away

@@ -1,3 +1,7 @@
+# RAM-rich family: SystemView RTT buffer defaults to the dogfood's measured-safe size
+# (-DSYSVIEW_BUFFER_SIZE overrides; see hw/bsp/family_support.cmake)
+set(SYSVIEW_BUFFER_SIZE_DEFAULT 65536)
+
 include_guard()
 
 set(NRFX_PATH ${TOP}/hw/mcu/nordic/nrfx)
@@ -130,11 +134,18 @@ function(family_configure_example TARGET RTOS)
   target_sources(${TARGET} PRIVATE
     ${CMAKE_CURRENT_FUNCTION_LIST_DIR}/family.c
     ${CMAKE_CURRENT_FUNCTION_LIST_DIR}/../board.c
-    ${TOP}/src/portable/nordic/nrf5x/dcd_nrf5x.c
-    ${TOP}/src/portable/synopsys/dwc2/dcd_dwc2.c
-    ${TOP}/src/portable/synopsys/dwc2/hcd_dwc2.c
-    ${TOP}/src/portable/synopsys/dwc2/dwc2_common.c
     )
+  if ("NRF54" IN_LIST FAMILY_MCUS)
+    target_sources(${TARGET} PRIVATE
+      ${TOP}/src/portable/synopsys/dwc2/dcd_dwc2.c
+      ${TOP}/src/portable/synopsys/dwc2/hcd_dwc2.c
+      ${TOP}/src/portable/synopsys/dwc2/dwc2_common.c
+      )
+  else ()
+    target_sources(${TARGET} PRIVATE
+      ${TOP}/src/portable/nordic/nrf5x/dcd_nrf5x.c
+      )
+  endif ()
   target_include_directories(${TARGET} PUBLIC
     ${CMAKE_CURRENT_FUNCTION_LIST_DIR}
     ${CMAKE_CURRENT_FUNCTION_LIST_DIR}/../../
